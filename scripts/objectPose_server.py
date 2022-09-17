@@ -55,6 +55,7 @@ import png
 import threading
 from odl.msg import SystemHealth
 
+# Class for epos functionality (create input)
 class createExampleListCls:
     def __init__(self):
         self.dataset = "carObj1"
@@ -137,6 +138,7 @@ class createExampleListCls:
             os.makedirs(self.output_dir)
         tfrecord.save_example_list(output_fpath, example_list)
 
+# Class for epos functionality (create input)
 class createTfRecordsCls:
     def is_pt_in_im(pt, im_size):
         return 0 <= pt[0] < im_size[0] and 0 <= pt[1] < im_size[1]
@@ -356,6 +358,7 @@ class createTfRecordsCls:
         w_total_t = time.time() - w_start_t
         tf.logging.info('Writing took {} s.'.format(w_total_t))
 
+# Class for actual epos functionality
 class eposInfer:
     def __init__(self):
         self.master = ''
@@ -1027,6 +1030,7 @@ class eposInfer:
 
         return poses, run_times
 
+# Class for service related data handling
 class cameraInput:
     def __init__(self):
         self.enableInputCallbacks = False
