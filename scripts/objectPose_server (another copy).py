@@ -64,7 +64,7 @@ class createExampleListCls:
         self.targets_filename = None#"test_targets_car.json"
         self.output_dir = os.path.join(config.TF_DATA_PATH, 'example_lists')
 
-        tf.logging.set_verbosity(tf.logging.ERROR) # INFO) TODO - avoid too much logging (INFO) for infer
+        tf.logging.set_verbosity(tf.logging.INFO)
 
         if self.scene_ids is not None and self.targets_filename is not None:
             raise ValueError(
@@ -285,7 +285,7 @@ class createTfRecordsCls:
         self.rgb_format = "png"
         self.output_dir = os.path.join(config.TF_DATA_PATH)
 
-        tf.logging.set_verbosity(tf.logging.ERROR)#INFO)
+        tf.logging.set_verbosity(tf.logging.INFO)
 
         # Load the list examples.
         examples_path = os.path.join(
@@ -388,7 +388,7 @@ class eposInfer:
         self.max_fitting_iterations = 400
 
         # Visualization parameters.
-        self.vis = True # TODO - deactivate visualizations
+        self.vis = True
         self.vis_gt_poses = False
         self.vis_pred_poses = True
         self.vis_gt_obj_labels = False
@@ -416,7 +416,7 @@ class eposInfer:
         self.samples = None
         #self.posesPredicted = dict() # TODO
 
-        tf.logging.set_verbosity(tf.logging.ERROR)#INFO)
+        tf.logging.set_verbosity(tf.logging.INFO)
 
         # Model folder.
         self.model_dir = os.path.join(config.TF_MODELS_PATH, self.model)
@@ -425,7 +425,7 @@ class eposInfer:
         common.update_flags(os.path.join(self.model_dir, common.PARAMS_FILENAME))
 
         # Print the flag values.
-        #common.print_flags()
+        common.print_flags()
 
         # Folder from which the latest model checkpoint will be loaded.
         self.checkpoint_dir = os.path.join(self.model_dir, 'train')
@@ -884,8 +884,8 @@ class eposInfer:
         time_start = time.time()
         poses = []
         for obj_id, obj_corr in corr.items():
-            tf.logging.info(
-              'Image path: {}, obj: {}'.format(samples[common.IMAGE_PATH][0], obj_id))
+            # tf.logging.info(
+            #   'Image path: {}, obj: {}'.format(samples[common.IMAGE_PATH][0], obj_id))
 
             # Number of established correspondences.
             num_corrs = obj_corr['coord_2d'].shape[0]
@@ -1030,12 +1030,12 @@ class eposInfer:
 class cameraInput:
     def __init__(self):
         self.enableInputCallbacks = False
-        self.rgb = None
-        self.depth = None
-        self.K = None
+        self.rgb = None#np.array([])  # np.empty((720, 1280, 3), np.uint8)
+        self.depth = None#np.array([])  # np.empty((720, 1280, 1), np.uint8)
+        self.K = None#np.array([])  # np.empty((3, 3))
         self.rgbImageTimestamp = 0
         self.objectId=0
-        self.posesPredicted=None
+        self.posesPredicted=None #dict()
         self.img1Count=-1
         self.img2Count=-1
         self.pub = rospy.Publisher('/ICCS/ObjectDetectionAndLocalization/ObjectPose', ObjectPose, queue_size=10)
@@ -1047,39 +1047,34 @@ class cameraInput:
                 self.rgb = CvBridge().imgmsg_to_cv2(data, desired_encoding="bgr8")
                 self.rgbImageTimestamp = data.header.stamp
                 im_rgb = cv2.cvtColor(self.rgb, cv2.COLOR_BGR2RGB)
-
-                # Clean up image folders
-                files1 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/*.png', recursive=True)
-                files2 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/*.png', recursive=True)
-                for f in files1:
-                    try:
-                        os.remove(f)
-                    except OSError as e:
-                        print("Error: %s : %s" % (f, e.strerror))
-                for f in files2:
-                    try:
-                        os.remove(f)
-                    except OSError as e:
-                        print("Error: %s : %s" % (f, e.strerror))
-
-                # capture and save images
                 if self.objectId == 1:
                     self.img1Count += 1
                     self.ImageReady = False
-                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png', im_rgb)
+                    # imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/00000' + str(self.img1Count) + '.png', im_rgb)
+                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png',
+                                    im_rgb)
+                    # imageio.imwrite('/home/lele/Desktop/capturedTest/000000.png',im_rgb)
+                    # cv2.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png', self.rgb)
+
+                    # imgTest = cv2.imread('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png')
                     while not self.ImageReady:
-                        imgTest1 = cv2.imread(
+                        imgTest = cv2.imread(
                             '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png')
-                        if imgTest1.size != 0:
+                        if imgTest.size != 0:
                             self.ImageReady = True
+                            print("self.ImageReady is ", self.ImageReady, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        ##self.ImageReady = not (imgTest.size == 0)
+                    print(
+                        "Saving RGB image is complete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 elif self.objectId == 2:
                     self.img2Count += 1
-                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png',  im_rgb)
-                    while not self.ImageReady:
-                        imgTest2 = cv2.imread(
-                            '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png')
-                        if imgTest2.size != 0:
-                            self.ImageReady = True
+                    # imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/00000' + str(self.img2Count) + '.png', im_rgb)
+                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png',
+                                    im_rgb)
+                    # imgTest = cv2.imread('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png')
+                    # if imgTest.size == 0:
+                    #     self.ImageReady = True
+                    # cv2.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png', self.rgb)
 
             except CvBridgeError as e:
                 print(e)
@@ -1090,8 +1085,11 @@ class cameraInput:
                 self.depth = CvBridge().imgmsg_to_cv2(data, desired_encoding="passthrough")
                 if self.objectId == 1:
                     path = '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/depth/000000.png'
+                    #imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/depth/000000.png', self.depth)
+                    #cv2.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/depth/000000.png', self.depth)
                 elif self.objectId == 2:
                     path = '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/depth/000000.png'
+                    #cv2.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/depth/000000.png', self.depth)
                 im_uint16 = np.round(self.depth).astype(np.uint16)
                 # PyPNG library can save 16-bit PNG and is faster than imageio.imwrite().
                 w_depth = png.Writer(self.depth.shape[1], self.depth.shape[0], greyscale=True, bitdepth=16)
@@ -1102,29 +1100,35 @@ class cameraInput:
 
     def callbackCameraInfo(self, data):
         if self.enableInputCallbacks == True:
-            #rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.K)
+            rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.K)
             self.K = data.K
 
     def get_pose(self, req):
-        # distinguish requested object
         if req.objID ==1:
             self.objectId = req.objID
         elif req.objID == 13:
             self.objectId = 2
-        else:
-            raise ValueError("Invalid object ID")
 
-        # Flag for capturing image when service is called
         self.enableInputCallbacks = True
         pose = ObjectPose()
 
+        print(not self.ImageReady, "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        #while not np.any(self.rgb) or not np.any(self.depth) or not np.any(self.K):
         while self.rgb is None or self.depth is None or self.K is None or not self.ImageReady:
+            print(self.rgb)
+            print(self.depth)
+            print(self.K)
             pass
 
-        # Flag for verifying image writing is complete
+        # TODO False when finished with saving
         self.enableInputCallbacks = False
 
-        # Initializations
+        print("Now print final data: ")
+        print(self.rgb)
+        print(self.depth)
+        print(self.K)
+        print(self.ImageReady)
+               
         rgb = self.rgb
         depth = self.depth
         K = self.K
@@ -1136,18 +1140,28 @@ class cameraInput:
         uL = [0, 0]
         lR = [0, 0]
 
-        # Create example lists and tf records (input for epos)
+        print("Ready to create example files!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        # TODO here call epos
+        #exec(open("/home/lele/catkin_ws/src/odl/src/odl/infer.py").read())
         exampleListCreator = createExampleListCls()
         exampleListCreator.createExampleList()
+        # ##os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
         tfRecordsCreator = createTfRecordsCls()
         tfRecordsCreator.runCreateTfRecords()
 
-        # Run epos prediction
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+        # trial to release gpu but not working properly. REVISIT if needed (https://github.com/tensorflow/tensorflow/issues/36465,  https://gist.github.com/MInner/9716950ac85b49821b56298117756451,  https://stackoverflow.com/questions/39758094/clearing-tensorflow-gpu-memory-after-model-execution)
+        # infer = eposInfer()
+        # self.posesPredicted = multiprocessing.Process(target=infer.predictPose)
+        # self.posesPredicted.start()
+        # #self.posesPredicted = p
+        # self.posesPredicted.join()
+
         infer = eposInfer()
         self.posesPredicted = infer.predictPose()
 
-        # Assign predicted pose
         first_im_poses_num = len(self.posesPredicted)
         for i in range(first_im_poses_num):
            if self.objectId == self.posesPredicted[i]['obj_id']:
@@ -1156,6 +1170,8 @@ class cameraInput:
                orie = self.posesPredicted[i]['R'].flatten('C')
                #uL = [0, 0]
                #lR = [0, 0]
+        #print(self.posesPredicted)
+        # TODO epos till here
 
         # create assign values to the results message
         pose.timestamp = rospy.Time.now()  # .get_rostime()
@@ -1167,15 +1183,28 @@ class cameraInput:
         pose.uLCornerBB = uL
         pose.lRCornerBB = lR
 
+        #self.posesPredicted.join()
         # clean up inputs to get prepared for the next call
         self.rgb = None
         self.depth = None
         self.K = None
 
-        # cleanup folders
+        # cleanup image folders
+        #files1 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/*.png', recursive=True)
+        #files2 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/*.png', recursive=True)
         files3 = glob.glob('/home/lele/Codes/epos/store/tf_data/example_lists/*.txt', recursive=True)
         #files4 = glob.glob('/home/lele/Codes/epos/store/tf_data/*.tfrecord', recursive=True)
 
+        # for f in files1:
+        #    try:
+        #        os.remove(f)
+        #    except OSError as e:
+        #        print("Error: %s : %s" % (f, e.strerror))
+        # for f in files2:
+        #    try:
+        #        os.remove(f)
+        #    except OSError as e:
+        #        print("Error: %s : %s" % (f, e.strerror))
         for f in files3:
            try:
                os.remove(f)
@@ -1187,10 +1216,21 @@ class cameraInput:
         #    except OSError as e:
         #        print("Error: %s : %s" % (f, e.strerror))
 
-        self.pub.publish(pose)
+        # print("before")
+        #print("before publishing")
+        self.pub.publish(pose)  # publish
+        #print("after publishing")
 
-        # clean up cuda
+        #self.posesPredicted.join()
+
+        # # clean up cuda
         gc.collect() #https://stackoverflow.com/questions/39758094/clearing-tensorflow-gpu-memory-after-model-execution
+        ## above 2 lines: crash after 2 loops #https://stackoverflow.com/questions/39758094/clearing-tensorflow-gpu-memory-after-model-execution
+        # cuda.select_device(0)
+        # cuda.close()
+        ## below 2 lines: failed to memset memory: CUDA_ERROR_INVALID_VALUE: invalid argument # https://stackoverflow.com/questions/39758094/clearing-tensorflow-gpu-memory-after-model-execution
+        # device = cuda.get_current_device()
+        # device.reset()
 
         return ObjectPoseServiceResponse(pose)
 
