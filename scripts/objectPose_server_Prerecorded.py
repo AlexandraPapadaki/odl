@@ -1050,41 +1050,41 @@ class cameraInput:
             try:
                 self.rgb = CvBridge().imgmsg_to_cv2(data, desired_encoding="bgr8")
                 self.rgbImageTimestamp = data.header.stamp
-                #self.ImageReady =True # uncomment this line and comment the rst below until the exception if you want to run with pre recorded. Also comment the part of deleting files3 and 4
-                im_rgb = cv2.cvtColor(self.rgb, cv2.COLOR_BGR2RGB)
-
-                # Clean up image folders
-                files1 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/*.png', recursive=True)
-                files2 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/*.png', recursive=True)
-                for f in files1:
-                    try:
-                        os.remove(f)
-                    except OSError as e:
-                        print("Error: %s : %s" % (f, e.strerror))
-                for f in files2:
-                    try:
-                        os.remove(f)
-                    except OSError as e:
-                        print("Error: %s : %s" % (f, e.strerror))
-
-                # capture and save images
-                if self.objectId == 1:
-                    self.img1Count += 1
-                    self.ImageReady = False
-                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png', im_rgb)
-                    while not self.ImageReady:
-                        imgTest1 = cv2.imread(
-                            '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png')
-                        if imgTest1.size != 0:
-                            self.ImageReady = True
-                elif self.objectId == 2:
-                    self.img2Count += 1
-                    imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png',  im_rgb)
-                    while not self.ImageReady:
-                        imgTest2 = cv2.imread(
-                            '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png')
-                        if imgTest2.size != 0:
-                            self.ImageReady = True
+                self.ImageReady =True # uncomment this line and comment the rst below until the exception if you want to run with pre recorded. Also comment the part of deleting files3 and 4
+                # im_rgb = cv2.cvtColor(self.rgb, cv2.COLOR_BGR2RGB)
+                #
+                # # Clean up image folders
+                # files1 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/*.png', recursive=True)
+                # files2 = glob.glob('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/*.png', recursive=True)
+                # for f in files1:
+                #     try:
+                #         os.remove(f)
+                #     except OSError as e:
+                #         print("Error: %s : %s" % (f, e.strerror))
+                # for f in files2:
+                #     try:
+                #         os.remove(f)
+                #     except OSError as e:
+                #         print("Error: %s : %s" % (f, e.strerror))
+                #
+                # # capture and save images
+                # if self.objectId == 1:
+                #     self.img1Count += 1
+                #     self.ImageReady = False
+                #     imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png', im_rgb)
+                #     while not self.ImageReady:
+                #         imgTest1 = cv2.imread(
+                #             '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000001/rgb/000000.png')
+                #         if imgTest1.size != 0:
+                #             self.ImageReady = True
+                # elif self.objectId == 2:
+                #     self.img2Count += 1
+                #     imageio.imwrite('/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png',  im_rgb)
+                #     while not self.ImageReady:
+                #         imgTest2 = cv2.imread(
+                #             '/home/lele/Codes/epos/datasets/carObj1/test_primesense/000002/rgb/000000.png')
+                #         if imgTest2.size != 0:
+                #             self.ImageReady = True
 
             except CvBridgeError as e:
                 print(e)
